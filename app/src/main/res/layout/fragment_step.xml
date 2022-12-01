@@ -92,6 +92,8 @@
         app:rsb_step_width="10dp"
         app:rsb_steps="4"
         app:rsb_thumb_drawable="@drawable/thumb_yellow_stroke"
+        app:rsb_tick_mark_gravity="centerBothSidesInward"
+        app:rsb_step_show_both_ends="false"
         app:rsb_tick_mark_layout_gravity="top"
         app:rsb_tick_mark_mode="other"
         app:rsb_tick_mark_text_array="@array/wordsArray"

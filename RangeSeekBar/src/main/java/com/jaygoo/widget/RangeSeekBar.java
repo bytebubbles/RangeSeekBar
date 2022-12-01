@@ -63,11 +63,12 @@ public class RangeSeekBar extends View {
     public final static int TICK_MARK_GRAVITY_LEFT = 0;
     public final static int TICK_MARK_GRAVITY_CENTER = 1;
     public final static int TICK_MARK_GRAVITY_RIGHT = 2;
+    public final static int TICK_MARK_GRAVITY_CENTER_BOTH_SIDES_INWARD = 3; //刻度文字居中，两边向内，避免被截取
 
     /**
      * @hide
      */
-    @IntDef({TICK_MARK_GRAVITY_LEFT, TICK_MARK_GRAVITY_CENTER, TICK_MARK_GRAVITY_RIGHT})
+    @IntDef({TICK_MARK_GRAVITY_LEFT, TICK_MARK_GRAVITY_CENTER, TICK_MARK_GRAVITY_RIGHT, TICK_MARK_GRAVITY_CENTER_BOTH_SIDES_INWARD})
     @Retention(RetentionPolicy.SOURCE)
     public @interface TickMarkGravityDef {
     }
@@ -143,6 +144,7 @@ public class RangeSeekBar extends View {
     private float stepsWidth;
     //the height of each step
     private float stepsHeight;
+    private boolean stepsShowBothEnds;
     //the radius of step divs
     private float stepsRadius;
     //steps is 0 will disable StepSeekBar
@@ -244,6 +246,7 @@ public class RangeSeekBar extends View {
             stepsRadius = t.getDimension(R.styleable.RangeSeekBar_rsb_step_radius, 0);
             stepsWidth = t.getDimension(R.styleable.RangeSeekBar_rsb_step_width, 0);
             stepsHeight = t.getDimension(R.styleable.RangeSeekBar_rsb_step_height, 0);
+            stepsShowBothEnds = t.getBoolean(R.styleable.RangeSeekBar_rsb_step_show_both_ends, true);
             stepsDrawableId = t.getResourceId(R.styleable.RangeSeekBar_rsb_step_drawable, 0);
             stepsAutoBonding = t.getBoolean(R.styleable.RangeSeekBar_rsb_step_auto_bonding, true);
             t.recycle();
@@ -398,6 +401,7 @@ public class RangeSeekBar extends View {
             for (int i = 0; i < tickMarkTextArray.length; i++) {
                 final String text2Draw = tickMarkTextArray[i].toString();
                 if (TextUtils.isEmpty(text2Draw)) continue;
+                paint.setAntiAlias(true);
                 paint.getTextBounds(text2Draw, 0, text2Draw.length(), tickMarkTextRect);
                 paint.setColor(tickMarkTextColor);
                 //平分显示
@@ -407,8 +411,16 @@ public class RangeSeekBar extends View {
                         x = getProgressLeft() + i * trickPartWidth - tickMarkTextRect.width();
                     } else if (tickMarkGravity == TICK_MARK_GRAVITY_CENTER) {
                         x = getProgressLeft() + i * trickPartWidth - tickMarkTextRect.width() / 2f;
-                    } else {
+                    } else if(tickMarkGravity == TICK_MARK_GRAVITY_LEFT) {
                         x = getProgressLeft() + i * trickPartWidth;
+                    }else {
+                        if(i == 0){
+                            x = getProgressLeft() + i * trickPartWidth;
+                        }else if( i == tickMarkTextArray.length-1){
+                            x = getProgressLeft() + i * trickPartWidth - tickMarkTextRect.width();
+                        }else {
+                            x = getProgressLeft() + i * trickPartWidth - tickMarkTextRect.width() / 2f;
+                        }
                     }
                 } else {
                     float num = Utils.parseFloat(text2Draw);
@@ -481,6 +493,9 @@ public class RangeSeekBar extends View {
         int stepMarks = getProgressWidth() / (steps);
         float extHeight = (stepsHeight - getProgressHeight()) / 2f;
         for (int k = 0; k <= steps; k++) {
+            if(!stepsShowBothEnds  && (k == 0 || k == steps)){
+                continue;
+            }
             float x = getProgressLeft() + k * stepMarks - stepsWidth / 2f;
             stepDivRect.set(x, getProgressTop() - extHeight, x + stepsWidth, getProgressBottom() + extHeight);
             if (stepsBitmaps.isEmpty() || stepsBitmaps.size() <= k) {
@@ -1021,6 +1036,7 @@ public class RangeSeekBar extends View {
      * {@link #TICK_MARK_GRAVITY_LEFT}
      * {@link #TICK_MARK_GRAVITY_RIGHT}
      * {@link #TICK_MARK_GRAVITY_CENTER}
+     * {@link #TICK_MARK_GRAVITY_CENTER_BOTH_SIDES_INWARD}
      * @param tickMarkGravity
      */
     public void setTickMarkGravity(@TickMarkGravityDef int tickMarkGravity) {
